@@ -5,7 +5,10 @@
 package it.polito.tdp.IndovinaNumero;
 
 import java.net.URL;
+import java.security.InvalidParameterException;
 import java.util.ResourceBundle;
+
+import it.polito.tdp.IndovinaNumero.model.Model;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -15,11 +18,7 @@ import javafx.scene.layout.HBox;
 
 public class FXMLController {
 	
-	private final int NMAX = 100;
-	private final int TMAX = 8;
-	private int segreto;
-	private int tentativiFatti;
-	private boolean inGioco = false;
+	private Model model;
 
     @FXML // ResourceBundle that was given to the FXMLLoader
     private ResourceBundle resources;
@@ -47,19 +46,18 @@ public class FXMLController {
 
     @FXML
     void doNuovaPartita(ActionEvent event) {
-    	//gestione inizio nuova partita
-    	this.segreto = (int) (Math.random() * NMAX) + 1; //0 non è infatti ammissibile
-    	this.tentativiFatti = 0;
-    	this.inGioco = true;
+    	//inizio la partita
+    	this.model.nuovaParita();
     	
     	//gestione dell'interfaccia
-    	this.txtTentativi.setText(Integer.toString(TMAX));
+    	this.txtTentativi.setText(Integer.toString(this.model.getTMAX()));
     	this.layoutTentativo.setDisable(false);
+    	
     }
 
     @FXML
     void doTentativo(ActionEvent event) {
-    	if (inGioco == true) {
+
     	//lettura input dell'utente
     	String ts = txtTentativoUtente.getText();
     	int tentativo;
@@ -70,37 +68,39 @@ public class FXMLController {
     		return;
     	}
     	
-    	this.tentativiFatti ++;
-    	this.txtTentativi.setText(Integer.toString(TMAX-this.tentativiFatti));
+    	this.txtTentativoUtente.setText("");
     	
-    	if (tentativo == this.segreto) {
+    	int result;
+    	try {
+    		result = this.model.tentativo(tentativo);
+    	}
+    	catch (IllegalStateException se){
+    		this.txtRisultato.setText(se.getMessage());
+    		this.layoutTentativo.setDisable(true);
+    		this.txtTentativi.setText("0");
+    		return;
+    	}
+    	catch (InvalidParameterException pe) {
+    		this.txtRisultato.setText(pe.getMessage());
+    		return;
+    	}
+    	
+    	if (result == 0) {
     		//Ho indovinato!
-    		txtRisultato.setText("Hai vinto con " + this.tentativiFatti +" tentativi!");
-    		this.inGioco = false;
+    		txtRisultato.setText("Hai vinto con " + this.model.getTentativiFatti() +" tentativi!");
     		this.layoutTentativo.setDisable(true);
     		return;
     	}
-    	
-    	if (this.tentativiFatti == TMAX) {
-    		//ho esaurito i tentativi
-    		txtRisultato.setText("Hai perso. Il segreto era: " + this.segreto);
-    		this.inGioco = false;
-    		this.layoutTentativo.setDisable(true);
-    		return;
-    	}
-    	
-    	//Non ho vinto -> Devo informare l'utente circa la bontà del suo tentativo
-    	if (tentativo < this.segreto) {
+    	else if (result <0) {
     		txtRisultato.setText("Tentativo troppo basso");
     	}
     	else {
     		txtRisultato.setText("Tentativo troppo alto");
     	}
-    	}
-    	else {
-    		txtRisultato.setText("Avviare una nuova partita per giocare.");
-    	}
-    }
+    	
+    	this.txtTentativi.setText(Integer.toString(this.model.getTMAX()-this.model.getTentativiFatti()));
+    	
+ }
 
     @FXML // This method is called by the FXMLLoader when initialization is complete
     void initialize() {
@@ -111,5 +111,9 @@ public class FXMLController {
         assert btnProva != null : "fx:id=\"btnProva\" was not injected: check your FXML file 'Scene.fxml'.";
         assert txtRisultato != null : "fx:id=\"txtRisultato\" was not injected: check your FXML file 'Scene.fxml'.";
 
+    }
+    
+    public void setModel(Model model) {
+    	this.model = model;
     }
 }
