@@ -6,15 +6,26 @@ import java.util.Set;
 
 public class Model {
 	
-	private final int NMAX = 100;
-	private final int TMAX = 8;
+	private int NMAX;
+	private int TMAX;
 	private int segreto;
 	private int tentativiFatti;
 	private boolean inGioco = false;
 	
 	private Set<Integer> tentativi;
 	
-	public void nuovaParita() {
+	public void nuovaParita(int difficolta) {
+		
+		if (difficolta == 1) {
+			NMAX = 10;
+			TMAX = 5;
+		} else if (difficolta == 2) {
+			NMAX = 100;
+			TMAX = 8;
+		} else if (difficolta == 3) {
+			NMAX = 150;
+			TMAX = 7;
+		}
 		
 		//gestione inizio nuova partita
     	this.segreto = (int) (Math.random() * NMAX) + 1; //0 non è infatti ammissibile

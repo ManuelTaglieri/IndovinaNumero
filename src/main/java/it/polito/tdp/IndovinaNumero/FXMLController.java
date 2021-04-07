@@ -12,6 +12,8 @@ import it.polito.tdp.IndovinaNumero.model.Model;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
@@ -43,15 +45,38 @@ public class FXMLController {
 
     @FXML // fx:id="txtRisultato"
     private TextArea txtRisultato; // Value injected by FXMLLoader
+    
+    @FXML
+    private ProgressBar barTentativi;
+    
+    @FXML
+    private ChoiceBox<String> boxDifficolta;
 
     @FXML
     void doNuovaPartita(ActionEvent event) {
+    	
+    	int difficolta = 0;
+    	
+    	if (boxDifficolta.getValue()==null) {
+    		txtRisultato.setText("Scegliere la difficoltà.");
+    		return;
+    	} else if (boxDifficolta.getValue().equals("Facile")) {
+    		difficolta = 1;
+    	} else if (boxDifficolta.getValue().equals("Medio")) {
+    		difficolta = 2;
+    	} else if (boxDifficolta.getValue().equals("Difficile")) {
+    		difficolta = 3;
+    	}
+    	
     	//inizio la partita
-    	this.model.nuovaParita();
+    	this.model.nuovaParita(difficolta);
     	
     	//gestione dell'interfaccia
     	this.txtTentativi.setText(Integer.toString(this.model.getTMAX()));
     	this.layoutTentativo.setDisable(false);
+    	this.barTentativi.setProgress(0);
+    	this.txtRisultato.clear();
+    	this.txtTentativoUtente.clear();
     	
     }
 
@@ -77,6 +102,7 @@ public class FXMLController {
     	catch (IllegalStateException se){
     		this.txtRisultato.setText(se.getMessage());
     		this.layoutTentativo.setDisable(true);
+    		this.barTentativi.setProgress(1);
     		this.txtTentativi.setText("0");
     		return;
     	}
@@ -99,6 +125,7 @@ public class FXMLController {
     	}
     	
     	this.txtTentativi.setText(Integer.toString(this.model.getTMAX()-this.model.getTentativiFatti()));
+    	this.barTentativi.setProgress((double) this.model.getTentativiFatti()/this.model.getTMAX());
     	
  }
 
@@ -110,7 +137,13 @@ public class FXMLController {
         assert txtTentativoUtente != null : "fx:id=\"txtTentativoUtente\" was not injected: check your FXML file 'Scene.fxml'.";
         assert btnProva != null : "fx:id=\"btnProva\" was not injected: check your FXML file 'Scene.fxml'.";
         assert txtRisultato != null : "fx:id=\"txtRisultato\" was not injected: check your FXML file 'Scene.fxml'.";
-
+        assert barTentativi != null : "fx:id=\"barTentativi\" was not injected: check your FXML file 'Scene.fxml'.";
+        assert boxDifficolta != null : "fx:id=\"boxDifficolta\" was not injected: check your FXML file 'Scene.fxml'.";
+        
+        this.boxDifficolta.getItems().add("Facile");
+        this.boxDifficolta.getItems().add("Medio");
+        this.boxDifficolta.getItems().add("Difficile");
+        
     }
     
     public void setModel(Model model) {
