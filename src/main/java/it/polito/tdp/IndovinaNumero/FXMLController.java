@@ -51,6 +51,12 @@ public class FXMLController {
     
     @FXML
     private ChoiceBox<String> boxDifficolta;
+    
+    @FXML
+    private ChoiceBox<String> boxAssistito;
+    
+    int nmin;
+    int nmax;
 
     @FXML
     void doNuovaPartita(ActionEvent event) {
@@ -68,8 +74,16 @@ public class FXMLController {
     		difficolta = 3;
     	}
     	
+    	if (boxAssistito.getValue()==null) {
+    		txtRisultato.setText("Inserire una modalità.");
+    		return;
+    	}
+    	
     	//inizio la partita
     	this.model.nuovaParita(difficolta);
+    	
+    	nmin = 0;
+    	nmax = this.model.getNMAX();
     	
     	//gestione dell'interfaccia
     	this.txtTentativi.setText(Integer.toString(this.model.getTMAX()));
@@ -118,10 +132,22 @@ public class FXMLController {
     		return;
     	}
     	else if (result <0) {
-    		txtRisultato.setText("Tentativo troppo basso");
+    		txtRisultato.setText("Tentativo troppo basso\n");
+    		if (boxAssistito.getValue().equals("Assistito")) {
+    			if (nmin<Integer.parseInt(ts)) {
+    				nmin = Integer.parseInt(ts);
+    			}
+    			txtRisultato.appendText("Prova a inserire un numero da " + nmin + " a " + nmax);
+    		}
     	}
     	else {
-    		txtRisultato.setText("Tentativo troppo alto");
+    		txtRisultato.setText("Tentativo troppo alto\n");
+    		if (boxAssistito.getValue().equals("Assistito")) {
+    			if (nmax>Integer.parseInt(ts)) {
+    				nmax = Integer.parseInt(ts);
+    			}
+    			txtRisultato.appendText("Prova a inserire un numero da " + nmin + " a " + nmax);
+    		}
     	}
     	
     	this.txtTentativi.setText(Integer.toString(this.model.getTMAX()-this.model.getTentativiFatti()));
@@ -139,10 +165,14 @@ public class FXMLController {
         assert txtRisultato != null : "fx:id=\"txtRisultato\" was not injected: check your FXML file 'Scene.fxml'.";
         assert barTentativi != null : "fx:id=\"barTentativi\" was not injected: check your FXML file 'Scene.fxml'.";
         assert boxDifficolta != null : "fx:id=\"boxDifficolta\" was not injected: check your FXML file 'Scene.fxml'.";
+        assert boxAssistito != null : "fx:id=\"boxAssistito\" was not injected: check your FXML file 'Scene.fxml'.";
         
         this.boxDifficolta.getItems().add("Facile");
         this.boxDifficolta.getItems().add("Medio");
         this.boxDifficolta.getItems().add("Difficile");
+        
+        this.boxAssistito.getItems().add("Normale");
+        this.boxAssistito.getItems().add("Assistito");
         
     }
     
